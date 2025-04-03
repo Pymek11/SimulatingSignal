@@ -26,7 +26,7 @@ def generateTerrain(height, width,terrain_array):
                 terrain_array[y][x] = W
     return terrain_array
 
-def plotTerrain(terrain_array, antennas):
+def plotTerrain(terrain_array, antennas,RSS_array):
     def scale_colorbar(x, pos):
         return f'{x * 1000:.0f}'
 
@@ -38,15 +38,21 @@ def plotTerrain(terrain_array, antennas):
 
     colors = terrain_array.flatten()
 
-    # Plot the terrain
     scatter = plt.scatter(x_coords, y_coords, c=colors, cmap='Spectral_r', s=1)
 
-    # Plot antennas
-    for x, y, type in antennas:
-        color = 'red' if type == 'Omni' else 'blue'
-        label = type
-        plt.scatter(x, y, c=color, s=100, label=label, edgecolors='black')
+    if np.any(antennas != 0):  # Check if there's any non-zero element in the array
+        antenna_labels = {'Omni': False, 'Sector': False}  # Track if we've added labels for each antenna type
 
+        for x, y, type in antennas:
+            color = 'red' if type == 'Omni' else 'blue'
+            label = type
+
+            # Add label to legend only the first time an antenna type is encountered
+            if not antenna_labels[type]:
+                plt.scatter(x, y, c=color, s=100, label=label, edgecolors='black')
+                antenna_labels[type] = True
+            else:
+                plt.scatter(x, y, c=color, s=100, edgecolors='black')
 
     cbar = plt.colorbar(scatter)
     cbar.set_ticks(cbar.get_ticks())
